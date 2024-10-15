@@ -1,30 +1,29 @@
-import React, {useEffect, useState} from 'react'
+import React, { useEffect, useState } from 'react';
 
 function App() {
 
-  const [backendData, setBackendData] = useState([{}])
+  const [backendData, setBackendData] = useState({ tickets: [] });
 
   useEffect(() => {
-    fetch("/api").then(
-      response => response.json()
-    ).then(
-      data => {
-        setBackendData(data)
-      }
-    )
-  }, [])
+    fetch("/api")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data); // Provjeri što stiže iz backend-a
+        setBackendData(data); // Ovdje pohranjuješ cijeli objekt { tickets: [...] }
+      });
+  }, []);
 
-  return(
+  return (
     <div>
-      {(typeof backendData.tickets == 'undefined') ? (
-        <p>Loading...</p>
-      ):(
+      {backendData.tickets.length === 0 ? (
+        <p>Loading here...</p>
+      ) : (
         backendData.tickets.map((ticket, i) => (
-          <p key={i}>{ticket}</p>
+          <p key={i}>{ticket.id}</p>
         ))
       )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
