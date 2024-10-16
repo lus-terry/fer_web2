@@ -16,8 +16,10 @@ const app = express();
 // Middleware za parsiranje JSON tijela
 app.use(express.json());
 
-// CORS za sve rute
-app.use(cors());
+app.use(cors({
+  origin: 'https://qr-app-frontend.onrender.com/'  // zamijeni s URL-om tvog frontenda
+}));
+
 
 // Jednostavni GET endpoint za testiranje
 app.get('/', (req: Request, res: Response) => {

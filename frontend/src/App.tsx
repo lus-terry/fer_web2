@@ -12,7 +12,7 @@ interface BackendData {
   tickets: Ticket[];
 }
 
-const apiUrl = process.env.REACT_APP_API_URL || "https://qr-app-backend-rp2l.onrender.com/"
+const apiUrl = process.env.REACT_APP_API_URL || "https://qr-app-backend-rp2l.onrender.com"
 
 const App: React.FC = () => {
   // Koristi tip za useState
@@ -20,11 +20,14 @@ const App: React.FC = () => {
 
   useEffect(() => {
     fetch(`${apiUrl}/api/tickets`)
-      .then((response) => response.json())
-      .then((data: BackendData) => {
-        console.log(data); // Provjeri što stiže iz backend-a
-        setBackendData(data); // Ovdje pohranjuješ cijeli objekt { tickets: [...] }
-      });
+    .then((response) => response.json())
+    .then((data: BackendData) => {
+      console.log(data); // Provjeri što stiže iz backend-a
+      setBackendData(data); // Ovdje pohranjuješ cijeli objekt { tickets: [...] }
+    })
+    .catch((error) => {
+      console.error("Error fetching tickets:", error); // Prikaz greške
+    });
   }, []);
 
   return (
