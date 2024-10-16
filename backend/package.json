@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "npm run build && node dist/index.js",
+    "build": "npm run clean && tsc && npm run copy-views",  
+    "clean": "shx rm -rf dist",  
+    "copy-views": "shx cp -r src/views/ dist",  
+    "start": "npm run build && node dist/index.js",  
     "dev": "tsc-watch --onSuccess \"node dist/index.js\""
   },
   "keywords": [],
@@ -22,6 +24,9 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.7.5",
-    "tsc-watch": "^6.2.0"
+    "@types/pg": "^8.11.10",
+    "shx": "^0.3.4",
+    "tsc-watch": "^6.2.0",
+    "typescript": "^5.6.3"
   }
 }
