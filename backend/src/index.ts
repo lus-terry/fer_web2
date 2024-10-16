@@ -27,7 +27,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // Ruta za dohvaćanje ulaznica (tickets)
-app.get('/api', async (req: Request, res: Response) => {
+app.get('/api/tickets', async (req: Request, res: Response) => {
   try {
     const tickets = await getTickets();
     res.json({tickets});
