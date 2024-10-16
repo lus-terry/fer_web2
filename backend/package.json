@@ -7,7 +7,7 @@
     "build": "npm run clean && tsc && npm run copy-views",  
     "clean": "shx rm -rf dist",  
     "copy-views": "shx cp -r src/views/ dist",  
-    "start": "npm run build && node dist/index.js",  
+    "start": "node dist/index.js",  
     "dev": "tsc-watch --onSuccess \"node dist/index.js\""
   },
   "keywords": [],
