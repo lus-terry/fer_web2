@@ -12,12 +12,14 @@ interface BackendData {
   tickets: Ticket[];
 }
 
+const apiUrl = process.env.REACT_APP_API_URL || "https://qr-app-backend-rp2l.onrender.com/"
+
 const App: React.FC = () => {
   // Koristi tip za useState
   const [backendData, setBackendData] = useState<BackendData>({ tickets: [] });
 
   useEffect(() => {
-    fetch("/api")
+    fetch(`${apiUrl}/api/tickets`)
       .then((response) => response.json())
       .then((data: BackendData) => {
         console.log(data); // Provjeri što stiže iz backend-a
