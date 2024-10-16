@@ -17,7 +17,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: 'https://qr-app-frontend.onrender.com/'  // zamijeni s URL-om tvog frontenda
+  origin: 'https://qr-app-frontend.onrender.com'  // zamijeni s URL-om tvog frontenda
 }));
 
 
