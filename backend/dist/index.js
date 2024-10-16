@@ -17,8 +17,9 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const db_1 = require("./db");
 dotenv_1.default.config();
+const externalUrl = process.env.RENDER_EXTERNAL_URL;
+const port = externalUrl && process.env.PORT ? parseInt(process.env.PORT) : 5000;
 const app = (0, express_1.default)();
-const port = process.env.PORT || 5000;
 // Middleware za parsiranje JSON tijela
 app.use(express_1.default.json());
 // CORS za sve rute
@@ -37,7 +38,26 @@ app.get('/api', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).send('Error retrieving tickets');
     }
 }));
-// Pokretanje servera
-app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
-});
+// Konfiguracija servera
+if (externalUrl) {
+    // Ako smo u Render okruženju (externalUrl je dostupan)
+    const hostname = '0.0.0.0'; // Potrebno za pokretanje na Renderu
+    app.listen(port, hostname, () => {
+        console.log(`Server locally running at http://${hostname}:${port}/ and from
+      outside on ${externalUrl}`);
+    });
+}
+else {
+    // Ako smo lokalno, pokreni HTTPS server
+    /*https.createServer({
+      key: fs.readFileSync('server.key'),
+      cert: fs.readFileSync('server.cert')
+    }, app)
+    .listen(port, function() {
+      console.log(`Server running at https://localhost:${port}`);
+    });*/
+    // Ako smo lokalno, koristi samo HTTP (ne HTTPS)
+    app.listen(port, () => {
+        console.log(`Server running at http://localhost:${port}`);
+    });
+}
