@@ -48,3 +48,41 @@ const tickets: Ticket[] = [];
   return tickets;
 }
 
+// Function to get the total number of tickets
+export async function getTicketCount(): Promise<number> {
+  try {
+    console.log('Executing query to count tickets...');
+    const result = await pool.query('SELECT COUNT(*) FROM tickets');
+    return parseInt(result.rows[0].count, 10); // Return the count as a number
+  } catch (err) {
+    console.error('Error executing count query', err);
+    throw err;
+  }
+}
+
+// Function to count how many tickets exist for a given OIB
+export async function getTicketCountForOIB(vatin: string): Promise<number> {
+  try {
+    const result = await pool.query('SELECT COUNT(*) FROM tickets WHERE vatin = $1', [vatin]);
+    return parseInt(result.rows[0].count, 10);
+  } catch (err) {
+    console.error('Error fetching ticket count for OIB:', err);
+    throw err;
+  }
+}
+
+// Function to create a new ticket
+export async function createTicket(vatin: string, firstName: string, lastName: string, ticketId: string): Promise<void> {
+  const creationTime = new Date();  // Get the current time
+
+  try {
+    await pool.query(
+      'INSERT INTO tickets (id, vatin, first_name, last_name, created_at) VALUES ($1, $2, $3, $4, $5)',
+      [ticketId, vatin, firstName, lastName, creationTime]
+    );
+  } catch (err) {
+    console.error('Error creating ticket:', err);
+    throw err;
+  }
+}
+

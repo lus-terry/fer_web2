@@ -1,10 +1,12 @@
 import dotenv from 'dotenv';
-import express, { Request, Response } from 'express';
+import express from 'express';
+import { Express, Request, Response} from 'express';
 import cors from 'cors';
-import { getTickets } from './db';
+import { createTicket, getTicketCount, getTicketCountForOIB, getTickets } from './db';
 const { auth } = require('express-oauth2-jwt-bearer');
-import fs from 'fs';
-import https from 'https';
+import { v4 as uuidv4 } from 'uuid';
+import QRCode from 'qrcode'
+
 
 dotenv.config();
 
@@ -15,8 +17,6 @@ const port=5000
 
 
 const app = express();
-
-
 // Middleware za parsiranje JSON tijela
 app.use(express.json());
 
@@ -53,37 +53,75 @@ app.get('/', (req: Request, res: Response) => {
 
 // Ruta za dohvaćanje ulaznica (tickets)
 app.get('/api/tickets', async (req: Request, res: Response) => {
-  console.log('Ruta /api/tickets je pozvana'); // Dodaj ovaj log
+  console.log('Ruta /api/tickets je pozvana');
   try {
     const tickets = await getTickets();
-    //const tickets = [{ id: '1', firstName: 'John', lastName: 'Doe' }];
     res.json({tickets});
   } catch (err) {
     res.status(500).send('Error retrieving tickets');
   }
 });
 
+// Endpoint for ticket count
+app.get('/api/tickets/count', async (req: Request, res: Response) => {
+  try {
+    const ticketsCount = await getTicketCount();
+    res.json({ticketsCount});
+  } catch (err) {
+    console.error('Error retrieving ticket count:', err);
+    res.status(500).json({ error: 'Error retrieving ticket count' });
+  }
+});
+
+// Endpoint for creating a ticket
+app.post('/api/tickets/create', async (req: Request, res: Response) => {
+  const { vatin, firstName, lastName } = req.body;
+
+  // Validate the request body
+  if (!vatin || !firstName || !lastName) {
+    res.status(400).json({ error: 'Missing required fields' });
+    return;
+  }
+
+  try {
+    // Check how many tickets exist for this OIB
+    const existingTicketsCount = await getTicketCountForOIB(vatin);
+    
+    if (existingTicketsCount >= 3) {
+      res.status(400).json({ error: 'Cannot create more than 3 tickets for this OIB' });
+      return;
+    }
+
+    // Generate UUID for the new ticket
+    const ticketId = uuidv4();
+
+    // Insert the ticket into the database
+    await createTicket(vatin, firstName, lastName, ticketId);
+
+    // Generate a QR code containing the ticket URL
+    const ticketUrl = `http://localhost:3000/ticket/${ticketId}`;
+    const qrCode = await QRCode.toDataURL(ticketUrl);
+
+    // Send back the QR code image as a base64 string
+    res.status(201).json({ qrCode });
+    return;
+  } catch (error) {
+    console.error('Error creating ticket:', error);
+    res.status(500).json({ error: 'Internal server error' });
+    return;
+  }
+
+});
 
 // Konfiguracija servera
 if (externalUrl) {
-  // Ako smo u Render okruženju (externalUrl je dostupan)
   const hostname = '0.0.0.0'; // Potrebno za pokretanje na Renderu
   app.listen(port, hostname, () => {
     console.log(`Server locally running at http://${hostname}:${port}/ and from
       outside on ${externalUrl}`);
   });
 } else {
-  // Ako smo lokalno, pokreni HTTPS server
-  /*https.createServer({
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.cert')
-  }, app)
-  .listen(port, function() {
-    console.log(`Server running at https://localhost:${port}`);
-  });*/
-  
-    // Ako smo lokalno, koristi samo HTTP (ne HTTPS)
-    app.listen(port, () => {
-      console.log(`Server running at http://localhost:${port}`);
-    });
+  app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+  });
 }

@@ -13,6 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTickets = getTickets;
+exports.getTicketCount = getTicketCount;
+exports.getTicketCountForOIB = getTicketCountForOIB;
+exports.createTicket = createTicket;
 const pg_1 = require("pg");
 const dotenv_1 = __importDefault(require("dotenv"));
 // Učitaj varijable iz .env datoteke
@@ -51,5 +54,45 @@ function getTickets() {
             throw err;
         }
         return tickets;
+    });
+}
+// Function to get the total number of tickets
+function getTicketCount() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            console.log('Executing query to count tickets...');
+            const result = yield pool.query('SELECT COUNT(*) FROM tickets');
+            return parseInt(result.rows[0].count, 10); // Return the count as a number
+        }
+        catch (err) {
+            console.error('Error executing count query', err);
+            throw err;
+        }
+    });
+}
+// Function to count how many tickets exist for a given OIB
+function getTicketCountForOIB(vatin) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const result = yield pool.query('SELECT COUNT(*) FROM tickets WHERE vatin = $1', [vatin]);
+            return parseInt(result.rows[0].count, 10);
+        }
+        catch (err) {
+            console.error('Error fetching ticket count for OIB:', err);
+            throw err;
+        }
+    });
+}
+// Function to create a new ticket
+function createTicket(vatin, firstName, lastName, ticketId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const creationTime = new Date(); // Get the current time
+        try {
+            yield pool.query('INSERT INTO tickets (id, vatin, first_name, last_name, created_at) VALUES ($1, $2, $3, $4, $5)', [ticketId, vatin, firstName, lastName, creationTime]);
+        }
+        catch (err) {
+            console.error('Error creating ticket:', err);
+            throw err;
+        }
     });
 }
