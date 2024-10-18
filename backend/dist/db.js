@@ -26,11 +26,19 @@ const pool = new pg_1.Pool({
     port: Number(process.env.DB_PORT) || 5432, // Tipiziraj port kao broj
     ssl: { rejectUnauthorized: false }
 });
+console.log("Povezujem se s bazom:", {
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_DATABASE,
+    port: process.env.DB_PORT,
+    ssl: { rejectUnauthorized: false }
+});
 // Funkcija za dohvaćanje podataka iz baze
 function getTickets() {
     return __awaiter(this, void 0, void 0, function* () {
         const tickets = [];
         try {
+            console.log('Izvršavam upit na bazu...');
             const results = yield pool.query('SELECT id FROM tickets');
             results.rows.forEach((row) => {
                 tickets.push({

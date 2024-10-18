@@ -7,8 +7,11 @@ import https from 'https';
 
 dotenv.config();
 
-const externalUrl = process.env.RENDER_EXTERNAL_URL;
-const port = externalUrl && process.env.PORT ? parseInt(process.env.PORT) : 5000;
+//const externalUrl = process.env.RENDER_EXTERNAL_URL;
+const externalUrl = null
+const port=5000
+//const port = externalUrl && process.env.PORT ? parseInt(process.env.PORT) : 5000;
+
 
 const app = express();
 
@@ -17,8 +20,13 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: 'https://qr-app-frontend.onrender.com'  // zamijeni s URL-om tvog frontenda
+  origin: 'http://localhost:3000'
 }));
+
+
+/*app.use(cors({
+  origin: 'https://qr-app-frontend.onrender.com'  // zamijeni s URL-om tvog frontenda
+}));*/
 
 
 // Jednostavni GET endpoint za testiranje
@@ -27,9 +35,11 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // Ruta za dohvaćanje ulaznica (tickets)
-app.get('/api', async (req: Request, res: Response) => {
+app.get('/api/tickets', async (req: Request, res: Response) => {
+  console.log('Ruta /api/tickets je pozvana'); // Dodaj ovaj log
   try {
     const tickets = await getTickets();
+    //const tickets = [{ id: '1', firstName: 'John', lastName: 'Doe' }];
     res.json({tickets});
   } catch (err) {
     res.status(500).send('Error retrieving tickets');

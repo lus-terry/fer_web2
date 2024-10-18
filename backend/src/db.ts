@@ -20,10 +20,20 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
+console.log("Povezujem se s bazom:", {
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_DATABASE,
+  port: process.env.DB_PORT,
+  ssl: { rejectUnauthorized: false }
+});
+
+
 // Funkcija za dohvaćanje podataka iz baze
 export async function getTickets(): Promise<Ticket[]> {
 const tickets: Ticket[] = [];
   try {
+    console.log('Izvršavam upit na bazu...');
     const results = await pool.query('SELECT id FROM tickets');
     results.rows.forEach((row : any) => {
       tickets.push({

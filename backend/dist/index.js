@@ -17,21 +17,29 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const db_1 = require("./db");
 dotenv_1.default.config();
-const externalUrl = process.env.RENDER_EXTERNAL_URL;
-const port = externalUrl && process.env.PORT ? parseInt(process.env.PORT) : 5000;
+//const externalUrl = process.env.RENDER_EXTERNAL_URL;
+const externalUrl = null;
+const port = 5000;
+//const port = externalUrl && process.env.PORT ? parseInt(process.env.PORT) : 5000;
 const app = (0, express_1.default)();
 // Middleware za parsiranje JSON tijela
 app.use(express_1.default.json());
-// CORS za sve rute
-app.use((0, cors_1.default)());
+app.use((0, cors_1.default)({
+    origin: 'http://localhost:3000'
+}));
+/*app.use(cors({
+  origin: 'https://qr-app-frontend.onrender.com'  // zamijeni s URL-om tvog frontenda
+}));*/
 // Jednostavni GET endpoint za testiranje
 app.get('/', (req, res) => {
     res.send('Hello World! Your QR code app is running.');
 });
 // Ruta za dohvaćanje ulaznica (tickets)
-app.get('/api', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get('/api/tickets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('Ruta /api/tickets je pozvana'); // Dodaj ovaj log
     try {
         const tickets = yield (0, db_1.getTickets)();
+        //const tickets = [{ id: '1', firstName: 'John', lastName: 'Doe' }];
         res.json({ tickets });
     }
     catch (err) {

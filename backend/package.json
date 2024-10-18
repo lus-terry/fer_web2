@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-"scripts": {
-  "build": "npm run clean && tsc ",
-  "clean": "rm -rf dist",  
-  "copy-views": "cp -r src/views/ dist", 
-  "start": "node dist/index.js"
-},
-
+  "scripts": {
+    "build": "npm run clean && tsc",
+    "clean": "shx rm -rf dist",
+    "copy-views": "shx cp -r src/views/ dist",
+    "start": "node dist/index.js",
+    "dev": "tsc-watch --onSuccess 'node dist/index.js'"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -17,6 +17,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "express-openid-connect": "^2.17.1",
     "pg": "^8.13.0",
     "uuid": "^10.0.0"
   },

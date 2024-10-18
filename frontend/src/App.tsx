@@ -1,46 +1,29 @@
-import React, { useEffect, useState } from 'react';
-
-// Definiraj tip za jedan ticket
-interface Ticket {
-  id: string;
-  firstName?: string;
-  lastName?: string;
-}
-
-// Definiraj tip za backend podatke
-interface BackendData {
-  tickets: Ticket[];
-}
-
-const apiUrl = process.env.REACT_APP_API_URL || "https://qr-app-backend-rp2l.onrender.com"
+import React from 'react';
+import Ticket from './components/Ticket'
+import { useAuth0 } from '@auth0/auth0-react';
+import Profile from './components/Profile';
 
 const App: React.FC = () => {
-  // Koristi tip za useState
-  const [backendData, setBackendData] = useState<BackendData>({ tickets: [] });
-
-  useEffect(() => {
-    fetch(`${apiUrl}/api/tickets`)
-    .then((response) => response.json())
-    .then((data: BackendData) => {
-      console.log(data); // Provjeri što stiže iz backend-a
-      setBackendData(data); // Ovdje pohranjuješ cijeli objekt { tickets: [...] }
-    })
-    .catch((error) => {
-      console.error("Error fetching tickets:", error); // Prikaz greške
-    });
-  }, []);
+  const { loginWithRedirect, logout, isAuthenticated } = useAuth0();
 
   return (
     <div>
-      {backendData.tickets.length === 0 ? (
-        <p>Loading here...</p>
+      {!isAuthenticated ? (
+        <div>
+          <h2>Dobrodošli! Molimo prijavite se.</h2>
+          <button onClick={() => loginWithRedirect()}>Prijava</button>
+        </div>
       ) : (
-        backendData.tickets.map((ticket, i) => (
-          <p key={i}>{ticket.id}</p>
-        ))
+        <div>
+           <h2>Uspješno ste prijavljeni!</h2>
+           <Profile /> {/* Prikaz korisničkog profila */}
+          <button onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>Odjava</button>
+
+            <Ticket/>
+        </div>
       )}
     </div>
   );
-}
+};
 
 export default App;
