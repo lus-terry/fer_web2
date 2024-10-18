@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { getTickets } from './db';
+const { auth } = require('express-oauth2-jwt-bearer');
 import fs from 'fs';
 import https from 'https';
 
@@ -27,6 +28,22 @@ app.use(cors({
 /*app.use(cors({
   origin: 'https://qr-app-frontend.onrender.com'  // zamijeni s URL-om tvog frontenda
 }));*/
+
+//api
+
+const jwtCheck = auth({
+  audience: 'https://qr-api',
+  issuerBaseURL: 'https://dev-wazzrvhywxioafwr.us.auth0.com/',
+  tokenSigningAlg: 'RS256'
+});
+
+// enforce on all endpoints
+app.use(jwtCheck);
+
+app.get('/authorized', function (req, res) {
+    res.send('Secured Resource');
+});
+
 
 
 // Jednostavni GET endpoint za testiranje
