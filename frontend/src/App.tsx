@@ -1,46 +1,47 @@
-import React, { useEffect, useState } from 'react';
-
-// Definiraj tip za jedan ticket
-interface Ticket {
-  id: string;
-  firstName?: string;
-  lastName?: string;
-}
-
-// Definiraj tip za backend podatke
-interface BackendData {
-  tickets: Ticket[];
-}
-
-const apiUrl = process.env.REACT_APP_API_URL || "https://qr-app-backend-rp2l.onrender.com"
+import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
+import React from "react";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import TicketDetails from "./components/TicketDetails";
+import HomePage from "./pages/Home"; // Component for generating tickets
 
 const App: React.FC = () => {
-  // Koristi tip za useState
-  const [backendData, setBackendData] = useState<BackendData>({ tickets: [] });
+  const { loginWithRedirect, logout, isAuthenticated } = useAuth0();
 
-  useEffect(() => {
-    fetch(`${apiUrl}/api/tickets`)
-    .then((response) => response.json())
-    .then((data: BackendData) => {
-      console.log(data); // Provjeri što stiže iz backend-a
-      setBackendData(data); // Ovdje pohranjuješ cijeli objekt { tickets: [...] }
-    })
-    .catch((error) => {
-      console.error("Error fetching tickets:", error); // Prikaz greške
-    });
-  }, []);
+  const domain = process.env.REACT_APP_AUTH0_DOMAIN || "";
+  const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID || "";
+  const audience = process.env.REACT_APP_AUTH0_AUDIENCE || "";
 
   return (
-    <div>
-      {backendData.tickets.length === 0 ? (
-        <p>Loading here...</p>
-      ) : (
-        backendData.tickets.map((ticket, i) => (
-          <p key={i}>{ticket.id}</p>
-        ))
-      )}
-    </div>
+    <Auth0Provider
+      domain={domain}
+      clientId={clientId}
+      authorizationParams={{
+        redirect_uri: window.location.origin,
+        audience: audience, // Postavi audience API-ja
+        scope: "openid profile email", // OpenID Connect postavke za prijavu korisnika
+      }}
+    >
+      <Router>
+        {/* Navbar included here */}
+        <Navbar />
+
+        {/* Define routes for different pages */}
+        <div
+          className="flex items-center justify-center"
+          style={{ height: "50vh" }}
+        >
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+
+            {isAuthenticated && (
+              <Route path="/tickets/:id" element={<TicketDetails />} />
+            )}
+          </Routes>
+        </div>
+      </Router>
+    </Auth0Provider>
   );
-}
+};
 
 export default App;
