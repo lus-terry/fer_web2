@@ -14,22 +14,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 const express_1 = __importDefault(require("express"));
-const cors_1 = __importDefault(require("cors"));
 const db_1 = require("./db");
 const { auth } = require('express-oauth2-jwt-bearer');
 const uuid_1 = require("uuid");
-const qrcode_1 = __importDefault(require("qrcode"));
 dotenv_1.default.config();
 //const externalUrl = process.env.RENDER_EXTERNAL_URL;
 const externalUrl = null;
 const port = 5000;
 //const port = externalUrl && process.env.PORT ? parseInt(process.env.PORT) : 5000;
 const app = (0, express_1.default)();
-// Middleware za parsiranje JSON tijela
-app.use(express_1.default.json());
-app.use((0, cors_1.default)({
-    origin: 'http://localhost:3000'
-}));
+//app.use(cors());
 /*app.use(cors({
   origin: 'https://qr-app-frontend.onrender.com'  // zamijeni s URL-om tvog frontenda
 }));*/
@@ -39,26 +33,10 @@ const jwtCheck = auth({
     issuerBaseURL: 'https://dev-wazzrvhywxioafwr.us.auth0.com/',
     tokenSigningAlg: 'RS256'
 });
-// enforce on all endpoints
-app.use(jwtCheck);
-app.get('/authorized', function (req, res) {
-    res.send('Secured Resource');
-});
 // Jednostavni GET endpoint za testiranje
 app.get('/', (req, res) => {
     res.send('Hello World! Your QR code app is running.');
 });
-// Ruta za dohvaćanje ulaznica (tickets)
-app.get('/api/tickets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Ruta /api/tickets je pozvana');
-    try {
-        const tickets = yield (0, db_1.getTickets)();
-        res.json({ tickets });
-    }
-    catch (err) {
-        res.status(500).send('Error retrieving tickets');
-    }
-}));
 // Endpoint for ticket count
 app.get('/api/tickets/count', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -70,44 +48,72 @@ app.get('/api/tickets/count', (req, res) => __awaiter(void 0, void 0, void 0, fu
         res.status(500).json({ error: 'Error retrieving ticket count' });
     }
 }));
+app.get('/api/tickets/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    console.log(req.params.id);
+    console.log('Request received to fetch ticket with ID:', id); // Logiraj primljeni ID
+    try {
+        console.log('Fetching ticket from the database...'); // Log prije poziva funkcije
+        const ticket = yield (0, db_1.getTicketById)(id); // Dohvati ulaznicu iz baze prema UUID-u
+        if (!ticket) {
+            console.log('No ticket found for ID:', id); // Log kada nema ulaznice za dati ID
+            res.status(404).json({ error: 'Ticket not found' });
+            return;
+        }
+        console.log('Ticket found:', ticket); // Log kada je ulaznica uspješno pronađena
+        res.json(ticket); // Vrati ulaznicu ako je nađena
+    }
+    catch (err) {
+        console.error('Error fetching ticket:', err); // Logiraj grešku ako se dogodila
+        res.status(500).json({ error: 'Error fetching ticket' });
+    }
+}));
 // Endpoint for creating a ticket
-app.post('/api/tickets/create', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/api/tickets/create', jwtCheck, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { vatin, firstName, lastName } = req.body;
     // Validate the request body
     if (!vatin || !firstName || !lastName) {
-        return res.status(400).json({ error: 'Missing required fields' });
+        res.status(400).json({ error: 'Missing required fields' });
+        return;
     }
     try {
         // Check how many tickets exist for this OIB
         const existingTicketsCount = yield (0, db_1.getTicketCountForOIB)(vatin);
         if (existingTicketsCount >= 3) {
-            return res.status(400).json({ error: 'Cannot create more than 3 tickets for this OIB' });
+            res.status(400).json({ error: 'Cannot create more than 3 tickets for this OIB' });
+            return;
         }
         // Generate UUID for the new ticket
         const ticketId = (0, uuid_1.v4)();
-        // Insert the ticket into the database
-        yield (0, db_1.createTicket)(vatin, firstName, lastName, ticketId);
-        // Generate a QR code containing the ticket URL
-        const ticketUrl = `http://localhost:3000/ticket/${ticketId}`;
-        const qrCode = yield qrcode_1.default.toDataURL(ticketUrl);
+        // Insert the ticket into the database and get the QR code
+        const qrCode = yield (0, db_1.createTicket)(vatin, firstName, lastName, ticketId);
         // Send back the QR code image as a base64 string
-        return res.status(201).json({ qrCode });
+        res.status(201).json({ qrCode });
+        return;
     }
     catch (error) {
         console.error('Error creating ticket:', error);
-        return res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Internal server error' });
+        return;
     }
 }));
-// Konfiguracija servera
+/*// Konfiguracija servera
 if (externalUrl) {
-    const hostname = '0.0.0.0'; // Potrebno za pokretanje na Renderu
-    app.listen(port, hostname, () => {
-        console.log(`Server locally running at http://${hostname}:${port}/ and from
+  const hostname = '0.0.0.0'; // Potrebno za pokretanje na Renderu
+  app.listen(port, hostname, () => {
+    console.log(`Server locally running at http://${hostname}:${port}/ and from
       outside on ${externalUrl}`);
-    });
-}
-else {
-    app.listen(port, () => {
-        console.log(`Server running at http://localhost:${port}`);
-    });
-}
+  });
+} else {
+  app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+  });
+}*/
+app._router.stack.forEach((r) => {
+    if (r.route && r.route.path) {
+        console.log(r.route.path);
+    }
+});
+app.listen(5000, () => {
+    console.log(`Server running at http://localhost:5000`);
+});

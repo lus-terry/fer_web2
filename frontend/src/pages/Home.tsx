@@ -12,7 +12,7 @@ const HomePage: React.FC = () => {
                     throw new Error ("Failed to fetch ticket count")
                 }
                 const data = await response.json();
-                setTicketCount(data.count)
+                setTicketCount(data.ticketsCount)
             } catch (err) {
                 setError("Error while fetching ticket count")
             }
