@@ -5,12 +5,12 @@ const HomePage: React.FC = () => {
   const [ticketCount, setTicketCount] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { user, isAuthenticated } = useAuth0();
-  const apiUrl = process.env.REACT_APP_API_URL 
+  const apiUrl = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     const fetchTicketCount = async () => {
       try {
-        const response = await fetch(`${apiUrl}/api/tickets/count`);;
+        const response = await fetch(`${apiUrl}/api/tickets/count`);
         if (!response.ok) {
           throw new Error("Failed to fetch ticket count");
         }

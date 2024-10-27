@@ -8,7 +8,7 @@ import {
   getTicketCount,
   getTicketCountForOIB,
 } from "./db";
-const { auth } = require("express-oauth2-jwt-bearer"); 
+const { auth } = require("express-oauth2-jwt-bearer");
 
 dotenv.config();
 
@@ -23,9 +23,9 @@ app.use(cors({ origin: "https://qr-app-frontend.onrender.com" }));
 app.use(express.json());
 
 const jwtCheck = auth({
-  audience: "https://qr-api",
-  issuerBaseURL: "https://dev-wazzrvhywxioafwr.us.auth0.com/",
-  tokenSigningAlg: "RS256",
+  audience: process.env.AUTH0_AUDIENCE,
+  issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
+  tokenSigningAlg: process.env.AUTH0_TOKEN_SIGNING_ALG,
 });
 
 app.get("/", (req: Request, res: Response) => {
@@ -50,7 +50,7 @@ app.get("/api/tickets/:id", async (req: Request, res: Response) => {
   console.log("Request received to fetch ticket with ID:", id);
 
   try {
-    console.log("Fetching ticket from the database...");
+    console.log("Fetching ticket from the database");
 
     const ticket = await getTicketById(id);
 

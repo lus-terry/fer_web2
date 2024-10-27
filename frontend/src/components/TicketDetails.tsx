@@ -1,19 +1,20 @@
+import { useAuth0 } from "@auth0/auth0-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 const TicketDetails = () => {
-  const { id } = useParams(); // Dohvaća UUID iz URL-a
-  const [ticket, setTicket] = useState<any>(null); // Podaci o ulaznici
-  const [loading, setLoading] = useState<boolean>(true); // Status učitavanja
-  const [error, setError] = useState<string | null>(null); // Poruka o grešci
-  const apiUrl = process.env.REACT_APP_API_URL 
+  const { id } = useParams();
+  const { user, isAuthenticated } = useAuth0();
+  const [ticket, setTicket] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const apiUrl = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     const fetchTicket = async () => {
       console.log("Fetching ticket details for ID:", id);
 
       try {
-        // API poziv za dohvaćanje detalja ulaznice prema UUID-u
         console.log(`${apiUrl}/api/tickets/${id}`);
         const response = await fetch(`${apiUrl}/api/tickets/${id}`);
 
@@ -30,7 +31,7 @@ const TicketDetails = () => {
         setLoading(false);
       } catch (err) {
         console.error("Error fetching ticket details:", err);
-        setError("Error while fetching ticket details. Please try again.");
+        setError("Error while fetching ticket details.");
         setLoading(false);
       }
     };
@@ -48,24 +49,30 @@ const TicketDetails = () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-full w-full text-center">
-      <h2>Ticket Details</h2>
+      {isAuthenticated && user && (
+        <h1 className="text-3xl font-bold m-3">Welcome {user?.name}!</h1>
+      )}
+
+      <h2 className="text-4xl font-bold mb-6">Ticket Details:</h2>
+
       {ticket ? (
-        <div>
-          <p>
-            <strong>OIB:</strong> {ticket.vatin}
-          </p>
-          <p>
-            <strong>First Name:</strong> {ticket.firstName}
-          </p>
-          <p>
-            <strong>Last Name:</strong> {ticket.lastName}
-          </p>
-          <p>
-            <strong>Created At:</strong> {ticket.createdAt}
-          </p>
+        <div className="flex space-x-10 text-left">
+          <div className="flex flex-col space-y-2 text-left">
+            <p className="font-semibold text-lg">OIB:</p>
+            <p className="font-semibold text-lg">First Name:</p>
+            <p className="font-semibold text-lg">Last Name:</p>
+            <p className="font-semibold text-lg">Created At:</p>
+          </div>
+
+          <div className="flex flex-col space-y-2 text-left">
+            <p className="text-lg">{ticket.vatin}</p>
+            <p className="text-lg">{ticket.firstName}</p>
+            <p className="text-lg">{ticket.lastName}</p>
+            <p className="text-lg">{ticket.createdAt}</p>
+          </div>
         </div>
       ) : (
-        <p>No ticket found.</p>
+        <h2 className="text-4xl font-bold">No ticket found.</h2>
       )}
     </div>
   );
