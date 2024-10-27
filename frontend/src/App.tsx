@@ -44,7 +44,6 @@ const App: React.FC = () => {
           style={{ height: "50vh" }}
         >
           <Routes>
-            <Route path="/" element={<HomePage />} />
             <Route
               path="/tickets/:id"
               element={
@@ -53,6 +52,7 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+            <Route path="/" element={<HomePage />} />
           </Routes>
         </div>
       </Router>
