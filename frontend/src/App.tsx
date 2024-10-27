@@ -10,6 +10,16 @@ import Navbar from "./components/Navbar";
 import TicketDetails from "./components/TicketDetails";
 import HomePage from "./pages/Home"; // Component for generating tickets
 
+const onRedirectCallback = (appState: any) => {
+  // Redirect to the target URL if available, otherwise default to home page
+  window.history.replaceState(
+    {},
+    document.title,
+    appState?.targetUrl || window.location.pathname
+  );
+};
+
+
 const App: React.FC = () => {
   const { loginWithRedirect, logout, isAuthenticated } = useAuth0();
 
@@ -26,6 +36,7 @@ const App: React.FC = () => {
         audience: audience, // Postavi audience API-ja
         scope: "openid profile email", // OpenID Connect postavke za prijavu korisnika
       }}
+      onRedirectCallback={onRedirectCallback} // Add the redirect callback
     >
       <Router>
         {/* Navbar included here */}
@@ -53,7 +64,7 @@ const ProtectedTicketDetails: React.FC = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      // Redirect to login, preserving the intended URL for after login
+      // Trigger login and set the target URL to return to after login
       loginWithRedirect({
         appState: { targetUrl: `/tickets/${id}` },
       });
