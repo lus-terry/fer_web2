@@ -1,6 +1,6 @@
 import { Auth0Provider } from "@auth0/auth0-react";
 import React from "react";
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import TicketDetails from "./components/TicketDetails";
@@ -10,20 +10,11 @@ const App: React.FC = () => {
   const domain = process.env.REACT_APP_AUTH0_DOMAIN || "";
   const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID || "";
   const audience = process.env.REACT_APP_AUTH0_AUDIENCE || "";
+  const navigate = useNavigate();
 
   const onRedirectCallback = (appState: any) => {
-    console.log("onRedirectCallback triggered");
-    console.log("appState:", appState);
-    console.log(
-      "returning to:",
-      appState?.returnTo || window.location.pathname
-    );
-
-    window.history.replaceState(
-      {},
-      document.title,
-      appState?.returnTo || window.location.pathname
-    );
+    const returnTo = appState?.returnTo || window.location.pathname;
+    navigate(returnTo, { replace: true });
   };
 
   return (
@@ -36,26 +27,25 @@ const App: React.FC = () => {
         scope: "openid profile email",
       }}
       onRedirectCallback={onRedirectCallback}
+      cacheLocation="localstorage"
     >
-      <Router>
-        <Navbar />
-        <div
-          className="flex items-center justify-center"
-          style={{ height: "50vh" }}
-        >
-          <Routes>
-            <Route
-              path="/tickets/:id"
-              element={
-                <ProtectedRoute>
-                  <TicketDetails />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/" element={<HomePage />} />
-          </Routes>
-        </div>
-      </Router>
+      <Navbar />
+      <div
+        className="flex items-center justify-center"
+        style={{ height: "50vh" }}
+      >
+        <Routes>
+          <Route
+            path="/tickets/:id"
+            element={
+              <ProtectedRoute>
+                <TicketDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/" element={<HomePage />} />
+        </Routes>
+      </div>
     </Auth0Provider>
   );
 };
