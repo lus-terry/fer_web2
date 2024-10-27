@@ -12,7 +12,6 @@ if (!domain || !clientId) {
   );
 }
 
-// Tipizacija za `getElementById` jer može biti null
 const rootElement = document.getElementById("root") as HTMLElement;
 
 const root = ReactDOM.createRoot(rootElement);
