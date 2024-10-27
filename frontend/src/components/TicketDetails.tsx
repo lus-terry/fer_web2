@@ -47,7 +47,7 @@ const TicketDetails = () => {
   }
 
   return (
-    <div>
+    <div className="flex flex-col items-center justify-center h-full w-full text-center">
       <h2>Ticket Details</h2>
       {ticket ? (
         <div>
