@@ -1,9 +1,25 @@
 import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
 import React from "react";
-import { Route, BrowserRouter as Router, Routes, Navigate } from "react-router-dom";
+import {
+  Route,
+  BrowserRouter as Router,
+  Routes
+} from "react-router-dom";
 import Navbar from "./components/Navbar";
-import HomePage from "./pages/Home";
 import TicketDetails from "./components/TicketDetails"; // Import TicketDetails component
+import HomePage from "./pages/Home";
+
+interface AppState {
+  returnTo?: string;
+}
+
+const onRedirectCallback = (appState?: AppState, user?: any) => {
+  window.history.replaceState(
+    {},
+    document.title,
+    appState?.returnTo || window.location.pathname
+  );
+};
 
 const App: React.FC = () => {
   const domain = process.env.REACT_APP_AUTH0_DOMAIN || "";
@@ -19,11 +35,15 @@ const App: React.FC = () => {
         audience: audience,
         scope: "openid profile email",
       }}
+      onRedirectCallback={onRedirectCallback} // Dodajemo onRedirectCallback
     >
       <Router>
         <Navbar />
 
-        <div className="flex items-center justify-center" style={{ height: "50vh" }}>
+        <div
+          className="flex items-center justify-center"
+          style={{ height: "50vh" }}
+        >
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/tickets/:id" element={<ProtectedTicketDetails />} />
@@ -34,17 +54,15 @@ const App: React.FC = () => {
   );
 };
 
-// ProtectedRoute component to handle authentication for protected routes
 const ProtectedTicketDetails: React.FC = () => {
   const { isAuthenticated, loginWithRedirect } = useAuth0();
 
-  // If not authenticated, redirect to login
   if (!isAuthenticated) {
-    loginWithRedirect();
-    return null; // Prevents rendering the component until authentication is resolved
+    loginWithRedirect({ appState: { returnTo: window.location.pathname } });
+    return null;
   }
 
-  return <TicketDetails />; // Render TicketDetails if authenticated
+  return <TicketDetails />;
 };
 
 export default App;
