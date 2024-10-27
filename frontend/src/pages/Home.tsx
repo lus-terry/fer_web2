@@ -26,7 +26,9 @@ const HomePage: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center h-full w-full text-center">
       {isAuthenticated ? (
-        <h1 className="text-3xl font-bold">Welcome {user?.name}!</h1>
+        <h1 className="text-3xl font-bold">
+          Welcome {user?.name || user?.email?.split("@")[0]}!
+        </h1>
       ) : (
         <h1 className="text-3xl font-bold">Welcome!</h1>
       )}

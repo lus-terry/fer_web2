@@ -50,7 +50,9 @@ const TicketDetails = () => {
   return (
     <div className="flex flex-col items-center justify-center h-full w-full text-center">
       {isAuthenticated && user && (
-        <h1 className="text-3xl font-bold m-12">Welcome {user?.name}!</h1>
+        <h1 className="text-3xl font-bold m-12">
+          Welcome {user?.name || user?.email?.split("@")[0]}!
+        </h1>
       )}
 
       <h2 className="text-3xl font-bold mb-6">Ticket Details:</h2>
