@@ -6,25 +6,23 @@ import {
   Routes
 } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import TicketDetails from "./components/TicketDetails"; // Import TicketDetails component
+import TicketDetails from "./components/TicketDetails";
 import HomePage from "./pages/Home";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-interface AppState {
-  returnTo?: string;
-}
-
-const onRedirectCallback = (appState?: AppState, user?: any) => {
-  window.history.replaceState(
-    {},
-    document.title,
-    appState?.returnTo || window.location.pathname
-  );
-};
 
 const App: React.FC = () => {
   const domain = process.env.REACT_APP_AUTH0_DOMAIN || "";
   const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID || "";
   const audience = process.env.REACT_APP_AUTH0_AUDIENCE || "";
+
+  const onRedirectCallback = (appState: any) => {
+    window.history.replaceState(
+      {},
+      document.title,
+      appState?.returnTo || window.location.pathname
+    );
+  };
 
   return (
     <Auth0Provider
@@ -35,7 +33,7 @@ const App: React.FC = () => {
         audience: audience,
         scope: "openid profile email",
       }}
-      onRedirectCallback={onRedirectCallback} // Dodajemo onRedirectCallback
+      onRedirectCallback={onRedirectCallback}
     >
       <Router>
         <Navbar />
@@ -46,23 +44,19 @@ const App: React.FC = () => {
         >
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/tickets/:id" element={<ProtectedTicketDetails />} />
+            <Route
+              path="/tickets/:id"
+              element={
+                <ProtectedRoute>
+                  <TicketDetails />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </div>
       </Router>
     </Auth0Provider>
   );
-};
-
-const ProtectedTicketDetails: React.FC = () => {
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
-
-  if (!isAuthenticated) {
-    loginWithRedirect({ appState: { returnTo: window.location.pathname } });
-    return null;
-  }
-
-  return <TicketDetails />;
 };
 
 export default App;
