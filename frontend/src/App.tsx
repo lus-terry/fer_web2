@@ -1,24 +1,8 @@
 import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
-import React, { useEffect } from "react";
-import {
-  Route,
-  BrowserRouter as Router,
-  Routes,
-  useParams,
-} from "react-router-dom";
+import React from "react";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import TicketDetails from "./components/TicketDetails";
 import HomePage from "./pages/Home"; // Component for generating tickets
-
-const onRedirectCallback = (appState: any) => {
-  // Redirect to the target URL if available, otherwise default to home page
-  window.history.replaceState(
-    {},
-    document.title,
-    appState?.targetUrl || window.location.pathname
-  );
-};
-
 
 const App: React.FC = () => {
   const { loginWithRedirect, logout, isAuthenticated } = useAuth0();
@@ -36,7 +20,6 @@ const App: React.FC = () => {
         audience: audience, // Postavi audience API-ja
         scope: "openid profile email", // OpenID Connect postavke za prijavu korisnika
       }}
-      onRedirectCallback={onRedirectCallback} // Add the redirect callback
     >
       <Router>
         {/* Navbar included here */}
@@ -50,29 +33,12 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<HomePage />} />
 
-            <Route path="/tickets/:id" element={<ProtectedTicketDetails />} />
+            {isAuthenticated && <Route path="/tickets/:id" />}
           </Routes>
         </div>
       </Router>
     </Auth0Provider>
   );
-};
-
-const ProtectedTicketDetails: React.FC = () => {
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
-  const { id } = useParams();
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      // Trigger login and set the target URL to return to after login
-      loginWithRedirect({
-        appState: { targetUrl: `/tickets/${id}` },
-      });
-    }
-  }, [isAuthenticated, loginWithRedirect, id]);
-
-  // Render TicketDetails only if authenticated
-  return isAuthenticated ? <TicketDetails /> : null;
 };
 
 export default App;
