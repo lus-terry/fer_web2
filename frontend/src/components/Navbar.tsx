@@ -5,7 +5,7 @@ import Profile from "./Profile";
 
 const Navbar: React.FC = () => {
   const { loginWithRedirect, logout, isAuthenticated } = useAuth0();
-  const logoUrl = process.env.LOGO_URL;
+  const logoUrl = process.env.REACT_APP_LOGO_URL;
 
   return (
     <nav className="bg-gray-200 px-5 py-2 flex justify-between items-center">
