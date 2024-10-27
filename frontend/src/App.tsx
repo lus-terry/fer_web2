@@ -10,13 +10,16 @@ import TicketDetails from "./components/TicketDetails";
 import HomePage from "./pages/Home";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-
 const App: React.FC = () => {
   const domain = process.env.REACT_APP_AUTH0_DOMAIN || "";
   const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID || "";
   const audience = process.env.REACT_APP_AUTH0_AUDIENCE || "";
 
   const onRedirectCallback = (appState: any) => {
+    console.log("onRedirectCallback triggered");
+    console.log("appState:", appState);
+    console.log("returning to:", appState?.returnTo || window.location.pathname);
+
     window.history.replaceState(
       {},
       document.title,
@@ -37,11 +40,7 @@ const App: React.FC = () => {
     >
       <Router>
         <Navbar />
-
-        <div
-          className="flex items-center justify-center"
-          style={{ height: "50vh" }}
-        >
+        <div className="flex items-center justify-center" style={{ height: "50vh" }}>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route
